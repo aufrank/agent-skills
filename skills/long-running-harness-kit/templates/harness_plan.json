@@ -1,0 +1,13 @@
+{
+  "plan_id": "harness-001",
+  "goal": "",
+  "initializer": {
+    "checks": [],
+    "artifacts": []
+  },
+  "coder": {
+    "next_steps": [],
+    "artifacts": []
+  },
+  "resume_notes": []
+}
