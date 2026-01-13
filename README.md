@@ -1,4 +1,5 @@
-# aufrank-agent-skills
+# Agent skills
+> from @aufrank
 
 Purpose-built skills and references for coding agents. Each skill bundles a `SKILL.md` plus optional scripts/references/assets so agents can load only what they need and execute deterministically.
 
