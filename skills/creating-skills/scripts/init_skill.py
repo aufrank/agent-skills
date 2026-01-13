@@ -285,8 +285,6 @@ def main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
-    main()
 def log(message: str, log_file: Path | None):
     """Log to stdout and optionally append to a log file."""
     timestamp = datetime.utcnow().isoformat(timespec="seconds") + "Z"
@@ -299,3 +297,7 @@ def log(message: str, log_file: Path | None):
                 fh.write(line + "\n")
         except Exception as e:
             print(f"[WARN] Failed to write log file ({log_file}): {e}")
+
+
+if __name__ == "__main__":
+    main()

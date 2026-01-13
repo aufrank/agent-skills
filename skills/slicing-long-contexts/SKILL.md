@@ -1,6 +1,6 @@
 ---
 name: slicing-long-contexts
-description: "Run Recursive Language Model-style map/reduce workflows via CLI (with codex or gemini: load long/complex inputs as data, slice by headings/chunks, issue sub-LM calls on slices, and optionally run a summarizing reducer; supports dry-run planning and divide-and-conquer for large or dense tasks."
+description: "Use when a prompt or corpus is long/dense (multi-docs, logs, codebases) and you want a reproducible map/reduce pipeline. Trigger this skill to slice inputs, run per-slice codex/gemini subcalls, and aggregate results with manifests/logs via the slice runner (preferred default), falling back to manual REPL slicing only if needed."
 ---
 
 # RLM CLI Runner
@@ -9,29 +9,31 @@ Use this skill to replicate the paper's REPL-based RLM pattern: treat the long p
 
 Trust posture: ASK for writes/network; keep sandbox workspace-write unless a task requires more. `--with-network` toggles codex/gemini network; leave it off unless needed.
 
-## Fast path (doc summarization)
+## Quick start (one command)
+
+```text
+python <CODEX_HOME>/skills/slicing-long-contexts/scripts/slice_runner.py --prompt <corpus-file> --question "<target>" --provider openai --chunk-size 30000 --prefer-headings --max-slices 6 --out-dir rlm_outputs/<run_id> --run-id <run_id> --with-user-codex-access --summary-cmd-template "codex {approval_flags} exec --model {model} \"$(cat {prompt_path})\"" --summary-system-prompt "You are writing <target-doc>. Combine sub-responses into a concise, structured, actionable output." --summary-out rlm_outputs/<run_id>/rlm_summary.txt
+```
+
+Replace `<CODEX_HOME>` with your installed skill root (for example, `~/.codex` or `C:\Users\you\.codex`).
+
+## Decision trigger (use the runner by default)
+If the input is long/complex or you need reproducible artifacts, run the CLI runner. Use the manual REPL flow only when you need custom slicing logic that the runner does not support.
+
+## Default path (runner, use this first)
 
 For “slice + summarize a long corpus into one doc” (headings, codex, network on):
 
-```bash
-python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/rlm_cli_runner.py \
-  --prompt <corpus-file> \
-  --question "Write <target-doc> covering <topics> in concise bullets." \
-  --provider openai \
-  --chunk-size 30000 --prefer-headings --max-slices 6 \
-  --out-dir rlm_outputs/<run_name> --run-id <run_name> \
-  --with-user-codex-access \
-  --summary-cmd-template 'codex {approval_flags} exec --model {model} "$(cat {prompt_path})"' \
-  --summary-system-prompt "You are writing <target-doc>. Combine sub-responses into a concise, structured, actionable output." \
-  --summary-out rlm_outputs/<run_name>/rlm_summary.txt
+```text
+python <CODEX_HOME>/skills/slicing-long-contexts/scripts/slice_runner.py --prompt <corpus-file> --question "Write <target-doc> covering <topics> in concise bullets." --provider openai --chunk-size 30000 --prefer-headings --max-slices 6 --out-dir rlm_outputs/<run_name> --run-id <run_name> --with-user-codex-access --summary-cmd-template "codex {approval_flags} exec --model {model} \"$(cat {prompt_path})\"" --summary-system-prompt "You are writing <target-doc>. Combine sub-responses into a concise, structured, actionable output." --summary-out rlm_outputs/<run_name>/rlm_summary.txt
 ```
 
 Then copy `rlm_outputs/<run_name>/rlm_summary.txt` into your target doc. Use absolute script paths; never `cd` into the skill dir or write outputs there.
 
 Cleanup helper (separate script):
 
-```bash
-python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs.py --target runs|slices|prompts|responses|summary|final|manifest|all
+```text
+python <CODEX_HOME>/skills/slicing-long-contexts/scripts/cleanup_outputs.py --target runs|slices|prompts|responses|summary|final|manifest|all
 ```
 
 ## When to use
@@ -67,15 +69,12 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 - Choose output dir (absolute or repo-relative; defaults to `<cwd>/rlm_outputs`): slices, prompts, sub-responses, final answer live here (configurable via `--out-dir/--output-dir`). Avoid writing inside `skills/`.
   - Note context stats for the REPL prompt: total chars, planned chunk sizes; record in log.
 
+### Advanced / manual REPL workflow (only if runner is insufficient)
+
 1) **Load prompt into REPL (root, depth 0)**:
 
-   ```bash
-   UV_CACHE_DIR=.uv-cache uv run python -q <<'PY'
-   from pathlib import Path
-   prompt = Path("prompt.txt").read_text()
-   print("chars", len(prompt))
-   print(prompt[:200])  # peek
-   PY
+   ```text
+   python -c "from pathlib import Path; prompt = Path('prompt.txt').read_text(encoding='utf-8'); print('chars', len(prompt)); print(prompt[:200])"
    ```
 
    Keep `prompt` as the REPL variable; do not pipe the entire text to LMs.
@@ -85,19 +84,10 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 
 3) **Issue sub-calls on slices (depth=1)**:
 
-   ```bash
-   slice_file=/tmp/rlm_slice_ch1.txt
-   UV_CACHE_DIR=.uv-cache uv run python - <<'PY'
-   from pathlib import Path
-   prompt = Path("prompt.txt").read_text()
-   start = prompt.find("Chapter 1")
-   end = prompt.find("Chapter 2")
-   if start == -1:  # marker missing -> fallback to fixed chunk
-       start, end = 0, 4000
-   Path("/tmp/rlm_slice_ch1.txt").write_text(prompt[start:end])
-   PY
+   ```text
+   python -c "from pathlib import Path; prompt = Path('prompt.txt').read_text(encoding='utf-8'); start = prompt.find('Chapter 1'); end = prompt.find('Chapter 2'); start, end = (0, 4000) if start == -1 else (start, end); Path('rlm_slice_ch1.txt').write_text(prompt[start:end], encoding='utf-8')"
 
-   codex --model gpt-4o "Sub-task: list items before the Great Catastrophe in this slice.\n---\n$(cat $slice_file)" > /tmp/rlm_subresp_ch1.txt
+   codex --model gpt-4o "Sub-task: list items before the Great Catastrophe in this slice.\n---\n$(cat rlm_slice_ch1.txt)" > rlm_subresp_ch1.txt
    ```
 
    - Label each sub-response; keep a list in REPL (`sub_responses = {"ch1": Path(...).read_text()}`).
@@ -106,17 +96,8 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 
 4) **Aggregate + verify in REPL**:
 
-   ```bash
-   UV_CACHE_DIR=.uv-cache uv run python - <<'PY'
-   from pathlib import Path
-   subs = {
-       "ch1": Path("/tmp/rlm_subresp_ch1.txt").read_text(),
-       "ch3": Path("/tmp/rlm_subresp_ch3.txt").read_text(),
-   }
-   final = f"From chapter 1: {subs['ch1']}\nFrom chapter 3: {subs['ch3']}"
-   Path("/tmp/rlm_final.txt").write_text(final)
-   print(final)
-   PY
+   ```text
+   python -c "from pathlib import Path; subs = {'ch1': Path('rlm_subresp_ch1.txt').read_text(encoding='utf-8'), 'ch3': Path('rlm_subresp_ch3.txt').read_text(encoding='utf-8')}; final = f\"From chapter 1: {subs['ch1']}\\nFrom chapter 3: {subs['ch3']}\"; Path('rlm_final.txt').write_text(final, encoding='utf-8'); print(final)"
    ```
 
    Optionally run a verification sub-call on the same slice to sanity-check a claim. Keep the final answer in a variable/file (analogous to FINAL_VAR in the paper) and emit once.
@@ -141,7 +122,8 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 
 - `references/repl-snippets.md` — slicing/search/compose helpers and logging snippets.
 - `references/dynamic_context_from_cursur.md` — dynamic context discovery pattern to minimize tokens.
-- `scripts/rlm_cli_runner.py --help` — view runnable options (slicing modes, code-mode, system prompt, logs).
+- `scripts/slice_runner.py --help` — view runnable options (slicing modes, code-mode, system prompt, logs).
+- `scripts/rlm_cli_runner.py` — backward-compatible shim (use `slice_runner.py` for new work).
 - `scripts/setup_markdown_tools.sh` — optional markdown parsing helpers via uvx.
 - `scripts/rerun_slice.py` / `scripts/verify_slice.py` — rerun or spot-check saved slice prompts.
 - `scripts/slice_utils.py` (CLI): slice prompt → slices + manifest.
@@ -152,7 +134,7 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 
 ### Default vs advanced usage
 
-- Default: use `rlm_cli_runner.py` to orchestrate slicing → subcalls → aggregation; it writes a manifest and all artifacts (slices/prompts/subresponses/final).
+- Default: use `slice_runner.py` to orchestrate slicing → subcalls → aggregation; it writes a manifest and all artifacts (slices/prompts/subresponses/final).
 - Advanced (compose manually):
   1. `slice_utils.py --prompt ... --out-dir ...` → slices + `manifest.json`
   2. `subcall_runner.py --prompt rlm_prompt_<tag>.txt --cmd-template ...` → run one slice (retries/skip supported)
@@ -177,39 +159,20 @@ python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/cleanup_outputs
 
 - Codex doc summarization (headings, network on):
 
-  ```bash
-  python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/rlm_cli_runner.py \
-    --prompt corpus.md \
-    --question "Summarize this corpus into <target doc> with concise bullets." \
-    --provider openai \
-    --chunk-size 30000 --prefer-headings --max-slices 6 \
-    --out-dir rlm_outputs/run1 --run-id run1 \
-    --with-user-codex-access \
-    --summary-cmd-template 'codex {approval_flags} exec --model {model} "$(cat {prompt_path})"' \
-    --summary-system-prompt "You are writing <target doc>. Combine sub-responses into a concise, structured, actionable output." \
-    --summary-out rlm_outputs/run1/rlm_summary.txt
+  ```text
+  python <CODEX_HOME>/skills/slicing-long-contexts/scripts/slice_runner.py --prompt corpus.md --question "Summarize this corpus into <target doc> with concise bullets." --provider openai --chunk-size 30000 --prefer-headings --max-slices 6 --out-dir rlm_outputs/run1 --run-id run1 --with-user-codex-access --summary-cmd-template "codex {approval_flags} exec --model {model} \"$(cat {prompt_path})\"" --summary-system-prompt "You are writing <target doc>. Combine sub-responses into a concise, structured, actionable output." --summary-out rlm_outputs/run1/rlm_summary.txt
   ```
 
 - Gemini variant (network on by default):
 
-  ```bash
-  python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/rlm_cli_runner.py \
-    --prompt corpus.md \
-    --question "Summarize this corpus into <target doc> with concise bullets." \
-    --provider gemini \
-    --chunk-size 30000 --prefer-headings --max-slices 6 \
-    --out-dir rlm_outputs/run1 --run-id run1 \
-    --summary-cmd-template 'gemini --approval-mode auto_edit "$(cat {prompt_path})"' \
-    --summary-system-prompt "You are writing <target doc>. Combine sub-responses into a concise, structured, actionable output." \
-    --summary-out rlm_outputs/run1/rlm_summary.txt
+  ```text
+  python <CODEX_HOME>/skills/slicing-long-contexts/scripts/slice_runner.py --prompt corpus.md --question "Summarize this corpus into <target doc> with concise bullets." --provider gemini --chunk-size 30000 --prefer-headings --max-slices 6 --out-dir rlm_outputs/run1 --run-id run1 --summary-cmd-template "gemini --approval-mode auto_edit \"$(cat {prompt_path})\"" --summary-system-prompt "You are writing <target doc>. Combine sub-responses into a concise, structured, actionable output." --summary-out rlm_outputs/run1/rlm_summary.txt
   ```
 
 - Override template that needs `{question}` inline:
 
-  ```bash
-  python /home/aufrank/.codex/skills/slicing-long-contexts/scripts/rlm_cli_runner.py \
-    --prompt prompt.txt --question "List blockers" \
-    --cmd-template 'codex {approval_flags} exec --model {model} "{question}\n\n$(cat {prompt_path})"'
+  ```text
+  python <CODEX_HOME>/skills/slicing-long-contexts/scripts/slice_runner.py --prompt prompt.txt --question "List blockers" --cmd-template "codex {approval_flags} exec --model {model} \"{question}\n\n$(cat {prompt_path})\""
   ```
 
 Note: `--prompt` must point to an existing file and `--question` cannot be empty; the runner will error otherwise.
@@ -219,6 +182,6 @@ Note: `--prompt` must point to an existing file and `--question` cannot be empty
 - Runner logs to `progress.log` (init, slices_ready, subcall) and `results.json` (final) using JSONL; optionally set `--run-id` to tag all entries.
 - To append manual notes in the same format, use the helper:  
 
-  ```bash
-  python skills/rlm-cli-runner/scripts/log_entry.py --log progress.log --run-id rlm-run-001 --step note --kv message="Paused for approval" --timestamp
+  ```text
+  python <CODEX_HOME>/skills/slicing-long-contexts/scripts/log_entry.py --log progress.log --run-id rlm-run-001 --step note --kv message="Paused for approval" --timestamp
   ```
