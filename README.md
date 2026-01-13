@@ -21,7 +21,7 @@ Purpose-built skills and references for coding agents. Each skill bundles a `SKI
 ## Practical workflows
 
 - Scaffolding: use `skills/*/scripts/init_skill.py` to spin up new skills; follow gerund-style names.
-- Development loop: Decide → Configure → Execute; keep intermediate outputs on disk for restartability.
+- Development loop: Plan → Instrument → Execute → Validate; keep intermediate outputs on disk for restartability.
 - Error handling: deterministic scripts with explicit failures and defaults; avoid deep reference chains.
 - Packaging/validation: validate structure before shipping; keep skills self-contained and portable.
 - Output norms: prefer JSON/YAML/Markdown for repeatable consumption; log how work was validated.
