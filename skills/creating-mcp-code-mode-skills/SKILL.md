@@ -1,6 +1,5 @@
 ---
 name: creating-mcp-code-mode-skills
-version: 1.3.0
 description: >
   A meta-skill for authoring high-performance, verifiable, long-running MCP skills
   using Code Mode. This skill blends Anthropic and OpenAI skill-authoring guidance
@@ -11,6 +10,7 @@ metadata:
   short-description: Author modular, deterministic, token-efficient MCP skills.
   audience: skill-authors
   stability: stable
+  version: "1.3.0"
 ---
 
 # Creating MCP Code Mode Skills
@@ -55,6 +55,22 @@ Every skill must clearly define:
 - What it is allowed to do
 - How it makes progress
 - How it fails safely
+
+## 1.1 Metadata taxonomy
+
+Use `metadata` in frontmatter for custom attributes (one level deep, lists allowed). Preferred keys:
+
+- `short-description`
+- `audience`
+- `stability`
+- `owner`
+- `tags`
+
+Avoid adding other top-level frontmatter keys; migrate them into `metadata`.
+
+## 1.2 Spec-aligned frontmatter
+
+Follow the Agent Skills spec: optional frontmatter fields are `license`, `compatibility`, `metadata`, `allowed-tools`.
 
 ## 2. Architectural First Principles
 
@@ -114,6 +130,14 @@ Canonical artifacts:
 - `results.json` — structured outputs # you can use more output files than just results.json, and you should be thoughtful about clobbering
 - `errors.log` — diagnostics
 
+### 2.4 Portable command blocks
+
+Make examples cross-platform and low-friction:
+
+- Prefer `text` fences and Python one-liners over bash heredocs.
+- Use placeholders like `<CODEX_HOME>`, `<REPO_ROOT>`, `<TOOL_HOME>` instead of hard-coded paths.
+- Call scripts via absolute paths; never require `cd` into the skill directory.
+
 ## 3. Skill Structure & Naming
 
 ### 3.1 Naming
@@ -162,7 +186,7 @@ templates/
 - Never pasted directly into prompts
 - Generated on demand via:
 
-```bash
+```text
 mcpc <target> tools-get <tool-name> --json
 ```
 
@@ -188,9 +212,8 @@ Required properties:
 
 Example:
 
-```bash
-mcpc --json @session tools-call get_data id:="123" \
-  | jq '{id, status, summary}' > results.json
+```text
+mcpc --json @session tools-call get_data id:="123" | jq '{id, status, summary}' > results.json
 ```
 
 The model may then read **only** `results.json`.

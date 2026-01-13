@@ -18,13 +18,13 @@ metadata:
 - Rovo search: `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_search.py --query "incident backlog"`
 - JQL search: `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_search_jql.py --jql "project = ABC ORDER BY updated DESC" --max-results 25`
 - Any tool (cached schemas): `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_call_tool.py --tool search --arg query:="AI" --refresh-cache`
-- WSL bridge: prefix with `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (optional `POWERSHELL_EXE`).
+- WSL bridge: prefix with `MCPC_BIN="<TOOL_HOME>"` (optional `POWERSHELL_EXE`).
 
 ## Prereqs & Auth
 - Tools: `mcpc` on PATH; Python 3.11+.
 - Manual login only: `mcpc https://mcp.atlassian.com/v1/mcp login --profile <name>` (default `default`).
 - Session defaults: `@jira` session, server `https://mcp.atlassian.com/v1/mcp`, profile from `MCP_PROFILE` or `default`.
-- WSL tip: reuse Windows keyring by exporting `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"`; set `POWERSHELL_EXE` for a specific PowerShell if needed.
+- WSL tip: reuse Windows keyring by exporting `MCPC_BIN="<TOOL_HOME>"`; set `POWERSHELL_EXE` for a specific PowerShell if needed.
 
 ## Trust / Permissions
 - **Always**: Read caches/references; inspect templates; view cached schemas on disk.

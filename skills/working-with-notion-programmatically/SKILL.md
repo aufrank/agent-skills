@@ -1,10 +1,10 @@
 ---
 name: working-with-notion-programmatically
-version: 1.1.0
 description: "Use mcpc to interact with the Notion MCP server: connect sessions, search workspace content, fetch pages/databases, and run helper scripts for common Notion actions."
 metadata:
   short-description: Notion MCP via mcpc with scripted preflight, caching, and file outputs.
   stability: stable
+  version: "1.1.0"
 ---
 # working-with-notion-programmatically
 

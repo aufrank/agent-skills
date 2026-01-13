@@ -1,5 +1,5 @@
 ---
-name: inspect-environment
+name: inspecting-the-environment
 description: Fast environment briefing for agents and subagents. Use at session start to learn OS/shell, container/WSL/VM status, git repo + upstream + dirty state, Python venv status/locations, markdown folders to read, and availability of common tools (uv, mcpc, rg/grep/jq/git/python/node/npm/pnpm, etc.).
 ---
 # Environment Inspection
@@ -9,11 +9,11 @@ Collect a quick, machine-readable snapshot of the current workspace so agents kn
 
 ## Quick Start
 Generate JSON (default):
-```bash
+```text
 python scripts/inspect_environment.py
 ```
 Readable text:
-```bash
+```text
 python scripts/inspect_environment.py --format text
 ```
 

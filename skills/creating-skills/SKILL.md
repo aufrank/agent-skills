@@ -18,6 +18,9 @@ This skill helps you design and ship skills that are concise, restartable, and d
 - Use the decide → configure → execute pattern; never mix freedom levels in one step.
 - Persist intent/results: `plan.json` (intent), `progress.log` (append-only log), `results.json` (structured outputs), `errors.log` (diagnostics). Do not write inside skill bundles during use.
 - Observability: log execution steps/commands to append-only files so the agent can observe flow; use tail/grep/summarize instead of dumping entire logs into context to stay token-efficient.
+- For portability, use `text` fences and Python one-liners instead of bash heredocs; prefer placeholders like `<CODEX_HOME>`, `<REPO_ROOT>`, `<TOOL_HOME>`.
+- Follow the Agent Skills spec: optional frontmatter fields are `license`, `compatibility`, `metadata`, `allowed-tools`.
+- Use `metadata` for custom attributes (one level deep, lists allowed). Prefer: `short-description`, `audience`, `stability`, `owner`, `tags`.
 
 ## Trust Policy
 
@@ -69,6 +72,7 @@ Keep phases separate: decide → configure → execute.
 - **Validation loops**: plan → validate → execute; favor machine-checkable validators.
 - **Dynamic context discovery**: write large outputs/logs to files; read with `head`/`tail`/`grep` as needed; avoid dumping blobs into context.
 - **Execution logs**: keep append-only logs (progress/errors/results) for debuggability and learning; when sharing in context, prefer succinct summaries or tails to conserve tokens.
+- **Portable command blocks**: use `python -c` for file creation and `text` fences to avoid shell assumptions; call scripts via absolute paths and placeholders.
 
 ## References
 

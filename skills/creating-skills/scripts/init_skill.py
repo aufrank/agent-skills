@@ -29,6 +29,15 @@ ALLOWED_RESOURCES = {"scripts", "references", "assets", "templates"}
 SKILL_TEMPLATE = """---
 name: {skill_name}
 description: [TODO: Clear, third-person, trigger-focused description of what the skill does and when to use it.]
+license: ""
+compatibility: ""
+metadata:
+  short-description: ""
+  audience: ""
+  stability: ""
+  owner: ""
+  tags: []
+allowed-tools: ""
 ---
 
 # {skill_title}

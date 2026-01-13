@@ -150,10 +150,10 @@ python <CODEX_HOME>/skills/slicing-long-contexts/scripts/cleanup_outputs.py --ta
 - If `--run-id` is omitted, runner uses `rlm-YYYYMMDD-HHMMSS` and writes to `rlm_outputs/<run-id>`.
 - Codex example cmd template: `codex --sandbox workspace-write --ask-for-approval untrusted exec --model {model} "$(cat {prompt_path})"`
 - Gemini example cmd template: `gemini --approval-mode auto_edit --model {model} "$(cat {prompt_path})"`
-- If Codex needs access to ~/.codex, add a writable dir: `--add-dir ~/.codex` (and `--add-dir ~/.codex/skills` if needed). Runner convenience: `--with-user-codex-access` appends these.
+- If Codex needs access to `<CODEX_HOME>`, add a writable dir: `--add-dir <CODEX_HOME>` (and `--add-dir <CODEX_HOME>/skills` if needed). Runner convenience: `--with-user-codex-access` appends these.
 - Greedy path: `--greedy-first` will run a single summarizing call (using `--summary-cmd-template`) when the prompt fits under `--greedy-max-chars` (default 180k), skipping slicing.
 - Token warning: runner estimates tokens (heuristic) and warns at `--warn-tokens` (default 64k) that the doc is likely long enough to divide and conquer.
-- Note: In WSL, symlinks to /mnt/c may still be blocked by NTFS perms/sandbox. Prefer WSL-local ~/.codex/.gemini or mount C: with metadata so the CLI can write sessions.
+- Note: In WSL, symlinks to /mnt/c may still be blocked by NTFS perms/sandbox. Prefer WSL-local `<CODEX_HOME>/.gemini` or mount C: with metadata so the CLI can write sessions.
 
 ## Common commands
 

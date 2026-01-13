@@ -1,7 +1,7 @@
 ---
 name: using-mcp-tools-with-mcpc
 description: Use mcpc CLI to interact with MCP servers - call tools, read resources, get prompts. Use when working with Model Context Protocol servers, calling MCP tools, or accessing MCP resources programmatically; prefer key:=value bindings over raw JSON bodies.
-allowed-tools: Bash(mcpc:*), Bash(node dist/cli/index.js:*), Read, Grep
+allowed-tools: Bash(mcpc:*) Bash(node dist/cli/index.js:*) Read Grep
 ---
 
 # mcpc: MCP command-line client
@@ -16,7 +16,7 @@ This is more efficient than function calling - generate shell commands instead.
 
 ## Quick reference
 
-```bash
+```text
 # List sessions and auth profiles
 mcpc
 
@@ -58,7 +58,7 @@ mcpc <server> logout
 
 Prefer `key:=value` bindings. Use inline JSON only when needed (e.g., first-arg object or complex arrays):   
 
-```bash
+```text
 # String values
 mcpc @s tools-call search query:="hello world"
 
@@ -82,7 +82,7 @@ echo '{"query":"hello"}' | mcpc @s tools-call search
 
 Always use `--json` flag for machine-readable output:
 
-```bash
+```text
 # Get tools as JSON
 mcpc --json @apify tools-list
 
@@ -97,7 +97,7 @@ mcpc --json @server1 tools-call get-data | mcpc @server2 tools-call process
 
 Create sessions for repeated interactions:
 
-```bash
+```text
 # Create session (or reconnect if exists)
 mcpc mcp.apify.com connect @apify
 
@@ -148,7 +148,7 @@ if not has_profile:
 After the preflight succeeds, scripts may call `mcpc --profile <name> ...` or rely on the default profile.
 
 **Bearer token**:
-```bash
+```text
 mcpc -H "Authorization: Bearer $TOKEN" mcp.apify.com tools-list
 mcpc -H "Authorization: Bearer $TOKEN" mcp.apify.com connect @myserver
 ```
@@ -157,7 +157,7 @@ mcpc -H "Authorization: Bearer $TOKEN" mcp.apify.com connect @myserver
 
 Create a proxy MCP server that hides authentication tokens:
 
-```bash
+```text
 # Human creates authenticated session with proxy
 mcpc mcp.apify.com connect @ai-proxy --proxy 8080
 
@@ -170,23 +170,23 @@ mcpc 127.0.0.1:8080 connect @sandboxed
 ## Common patterns
 
 **List and inspect tools**:
-```bash
+```text
 mcpc @s tools-list
 mcpc @s tools-get tool-name
 ```
 
 **Call tool and extract text result**:
-```bash
+```text
 mcpc --json @s tools-call my-tool | jq -r '.content[0].text'
 ```
 
 **Read resource content**:
-```bash
+```text
 mcpc @s resources-read "file:///path/to/file"
 ```
 
 **Use config file for local servers**:
-```bash
+```text
 mcpc --config .vscode/mcp.json filesystem resources-list
 ```
 
@@ -200,7 +200,7 @@ mcpc --config .vscode/mcp.json filesystem resources-list
 
 ## Debugging
 
-```bash
+```text
 # Verbose output shows protocol details
 mcpc --verbose @s tools-call my-tool
 ```

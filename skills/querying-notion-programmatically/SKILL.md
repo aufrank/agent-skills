@@ -18,13 +18,13 @@ metadata:
 - Search workspace: `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_query.py --query "AI ML" --pretty`
 - Fetch comments: `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_comments.py --page-id <page-id-or-url>`
 - Any tool (cached schemas): `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_call_tool.py --tool notion-search --arg query:="AI" --refresh-cache`
-- WSL bridge: prefix with `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (optional `POWERSHELL_EXE`).
+- WSL bridge: prefix with `MCPC_BIN="<TOOL_HOME>"` (optional `POWERSHELL_EXE`).
 
 ## Prereqs & Auth
 - Tools: `mcpc` on PATH; Python 3.11+.
 - Manual login only (agent never opens browser): `mcpc https://mcp.notion.com/mcp login --profile <name>` (default `default`).
 - Session defaults: `@notion` session, server `https://mcp.notion.com/mcp`, profile from `MCP_PROFILE` or `default`.
-- WSL tip: reuse Windows keyring by setting `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (PowerShell bridge). Optional `POWERSHELL_EXE` to point at a specific PowerShell.
+- WSL tip: reuse Windows keyring by setting `MCPC_BIN="<TOOL_HOME>"` (PowerShell bridge). Optional `POWERSHELL_EXE` to point at a specific PowerShell.
 
 ## Trust / Permissions
 - **Always**: Read local files, inspect references/templates, view cached tool schemas on disk.
