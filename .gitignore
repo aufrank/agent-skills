@@ -7,3 +7,5 @@ rlm_outputs/
 results.json
 progress.log
 ./**/.git
+.mcpc-skill-caches/
+results/

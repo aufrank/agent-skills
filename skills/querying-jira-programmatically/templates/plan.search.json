@@ -1,0 +1,11 @@
+{
+  "id": "plan-jira-search-001",
+  "query": "<search text>",
+  "session": "@jira",
+  "profile": "default",
+  "server": "https://mcp.atlassian.com/v1/mcp",
+  "notes": "Rovo search (tool: search). Add filters/owners manually later.",
+  "expected_outputs": [
+    "results/jira.search.json"
+  ]
+}

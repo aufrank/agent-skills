@@ -1,0 +1,11 @@
+{
+  "id": "plan-jira-jql-001",
+  "jql": "<project = ABC AND statusCategory = \"In Progress\">",
+  "maxResults": 50,
+  "session": "@jira",
+  "profile": "default",
+  "server": "https://mcp.atlassian.com/v1/mcp",
+  "expected_outputs": [
+    "results/jira.jql.json"
+  ]
+}

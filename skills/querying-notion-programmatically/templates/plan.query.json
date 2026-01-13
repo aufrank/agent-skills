@@ -1,0 +1,12 @@
+{
+  "id": "plan-query-001",
+  "query": "<search text>",
+  "query_type": "internal",
+  "session": "@notion",
+  "profile": "default",
+  "server": "https://mcp.notion.com/mcp",
+  "notes": "What should be found? Key pages/owners? (No filters yet; add in later step.)",
+  "expected_outputs": [
+    "results/query.search.json"
+  ]
+}
