@@ -15,9 +15,9 @@ metadata:
 - Scope: queries/read-only; no edits/transitions by default.
 
 ## Quick Start (examples)
-- Rovo search: `python scripts/jira_search.py --query "incident backlog"`
-- JQL search: `python scripts/jira_search_jql.py --jql "project = ABC ORDER BY updated DESC" --max-results 25`
-- Any tool (cached schemas): `python scripts/jira_call_tool.py --tool search --arg query:="AI" --refresh-cache`
+- Rovo search: `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_search.py --query "incident backlog"`
+- JQL search: `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_search_jql.py --jql "project = ABC ORDER BY updated DESC" --max-results 25`
+- Any tool (cached schemas): `python <CODEX_HOME>/skills/querying-jira-programmatically/scripts/jira_call_tool.py --tool search --arg query:="AI" --refresh-cache`
 - WSL bridge: prefix with `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (optional `POWERSHELL_EXE`).
 
 ## Prereqs & Auth
@@ -27,8 +27,8 @@ metadata:
 - WSL tip: reuse Windows keyring by exporting `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"`; set `POWERSHELL_EXE` for a specific PowerShell if needed.
 
 ## Trust / Permissions
-- **Always**: Read caches/references; list tools; fetch schemas; run read-only searches.
-- **Ask**: Any tool call that mutates Jira (edits, transitions, create, comments); packaging.
+- **Always**: Read caches/references; inspect templates; view cached schemas on disk.
+- **Ask**: Any mcpc call (network); any tool call that mutates Jira (edits, transitions, create, comments); packaging.
 - **Never**: Direct HTTP or credential exposure; destructive actions without explicit user direction.
 
 ## Canonical Loop
@@ -67,4 +67,4 @@ metadata:
 
 ## Packaging
 - Validate + package when done:  
-  `python agent-skills/skills/creating-mcp-code-mode-skills/scripts/package_skill.py agent-skills/skills/querying-jira-programmatically dist`
+  `python <REPO_ROOT>/skills/creating-mcp-code-mode-skills/scripts/package_skill.py <REPO_ROOT>/skills/querying-jira-programmatically dist`

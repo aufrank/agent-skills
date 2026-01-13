@@ -15,9 +15,9 @@ metadata:
 - Scope now: queries only; add filters/date/creator later.
 
 ## Quick Start (examples)
-- Search workspace: `python scripts/notion_query.py --query "AI ML" --pretty`
-- Fetch comments: `python scripts/notion_comments.py --page-id <page-id-or-url>`
-- Any tool (cached schemas): `python scripts/notion_call_tool.py --tool notion-search --arg query:="AI" --refresh-cache`
+- Search workspace: `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_query.py --query "AI ML" --pretty`
+- Fetch comments: `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_comments.py --page-id <page-id-or-url>`
+- Any tool (cached schemas): `python <CODEX_HOME>/skills/querying-notion-programmatically/scripts/notion_call_tool.py --tool notion-search --arg query:="AI" --refresh-cache`
 - WSL bridge: prefix with `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (optional `POWERSHELL_EXE`).
 
 ## Prereqs & Auth
@@ -27,8 +27,8 @@ metadata:
 - WSL tip: reuse Windows keyring by setting `MCPC_BIN="C:\\Users\\<user>\\AppData\\Roaming\\npm\\mcpc.cmd"` (PowerShell bridge). Optional `POWERSHELL_EXE` to point at a specific PowerShell.
 
 ## Trust / Permissions
-- **Always**: Read local files, inspect references/templates, view cached tool schemas.
-- **Ask**: Any script that calls mcpc (network), packaging, writing results.
+- **Always**: Read local files, inspect references/templates, view cached tool schemas on disk.
+- **Ask**: Any mcpc call (network); packaging; writing results.
 - **Never**: Destructive Notion actions (deletes/moves), credential exfil, auto-login/browser opening.
 
 ## Canonical Loop
@@ -60,4 +60,4 @@ metadata:
 
 ## Packaging
 - Validate + package when done:  
-  `python agent-skills/skills/creating-mcp-code-mode-skills/scripts/package_skill.py agent-skills/skills/querying-notion-programmatically dist`
+  `python <REPO_ROOT>/skills/creating-mcp-code-mode-skills/scripts/package_skill.py <REPO_ROOT>/skills/querying-notion-programmatically dist`

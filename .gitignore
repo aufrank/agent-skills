@@ -9,3 +9,4 @@ progress.log
 ./**/.git
 .mcpc-skill-caches/
 results/
+dist/
