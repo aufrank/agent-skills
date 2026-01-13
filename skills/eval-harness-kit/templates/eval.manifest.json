@@ -1,0 +1,49 @@
+{
+  "suite_name": "example-eval-suite",
+  "note": "Replace <CODEX_HOME> with your installed skill root (e.g., ~/.codex or C:\\Users\\you\\.codex) or swap to <REPO_ROOT> for local dev.",
+  "llm_judge_cmd": "codex {approval_flags} exec --model {model} \"$(cat {rubric_path})\"",
+  "tasks": [
+    {
+      "id": "single_turn_example",
+      "input_path": "<CODEX_HOME>/skills/eval-harness-kit/examples/animal.txt",
+      "expected_path": "<CODEX_HOME>/skills/eval-harness-kit/examples/animal.expected.txt",
+      "run_cmd": [
+        "python",
+        "-c",
+        "from pathlib import Path; Path('{output_path}').write_text('18\\n', encoding='utf-8')"
+      ],
+      "graders": [
+        {
+          "type": "exact_match",
+          "strip": true
+        }
+      ],
+      "trials": 1
+    },
+    {
+      "id": "agentic_example",
+      "input_path": "<CODEX_HOME>/skills/eval-harness-kit/tasks/build_mcp.txt",
+      "run_cmd": [
+        "python",
+        "<CODEX_HOME>/skills/eval-harness-kit/scripts/example_agent.py",
+        "--task",
+        "{input_path}",
+        "--output",
+        "{output_path}",
+        "--transcript",
+        "{transcript_path}"
+      ],
+      "graders": [
+        {
+          "type": "regex",
+          "pattern": "SERVER_READY"
+        },
+        {
+          "type": "llm_rubric",
+          "rubric_path": "<CODEX_HOME>/skills/eval-harness-kit/templates/llm_rubric_prompt.txt"
+        }
+      ],
+      "trials": 3
+    }
+  ]
+}

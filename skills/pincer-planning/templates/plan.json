@@ -1,0 +1,18 @@
+{
+  "plan_id": "pincer-001",
+  "goal": "",
+  "top_down": {
+    "success_criteria": [],
+    "constraints": [],
+    "out_of_scope": []
+  },
+  "bottom_up": {
+    "assets": [],
+    "risks": [],
+    "dependencies": [],
+    "unknowns": []
+  },
+  "questions": [],
+  "merged_plan": [],
+  "gaps": []
+}

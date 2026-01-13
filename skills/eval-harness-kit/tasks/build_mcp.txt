@@ -1,0 +1,1 @@
+Write an MCP server that responds with SERVER_READY when started.

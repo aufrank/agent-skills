@@ -1,0 +1,12 @@
+You are a strict eval grader. Score the output against the rubric below.
+
+Rubric:
+- Output must include the marker "SERVER_READY".
+- Output should echo the task prompt content.
+
+Input: {input_path}
+Expected: {expected_path}
+Output: {output_path}
+
+Return JSON only:
+{"passed": true|false, "score": 0.0-1.0, "details": "short reason"}
