@@ -1,0 +1,7 @@
+{
+  "keywords": ["Project X", "Q1 Planning"],
+  "jira_projects": ["PROJ", "ENG"],
+  "notion_pages": ["Daily Standup", "Roadmap"],
+  "google_calendar": true,
+  "google_gmail_query": "is:unread importance:high"
+}

@@ -1,0 +1,164 @@
+{
+  "collaborators": [
+    {
+      "name": "Austin Frank",
+      "email": "aufrank@riotgames.com",
+      "handle": "@aufrank"
+    },
+    {
+      "name": "Israel Knight",
+      "email": "israel.knight@riotgames.com",
+      "handle": "@israel.knight"
+    },
+    {
+      "name": "Shane Shannon",
+      "email": "sshannon@riotgames.com",
+      "handle": "@sshannon"
+    },
+    {
+      "name": "Erin Aho",
+      "email": "eaho@riotgames.com",
+      "handle": "@eaho"
+    },
+    {
+      "name": "Trevor Somers",
+      "email": "tsomers@riotgames.com",
+      "handle": "@tsomers"
+    },
+    {
+      "name": "Oben Tataw",
+      "email": "otataw@riotgames.com",
+      "handle": "@otataw"
+    },
+    {
+      "name": "Trotter Cashion",
+      "email": "tcashion@riotgames.com",
+      "handle": "@tcashion"
+    }
+  ],
+  "topics": [
+    {
+      "name": "AI/ML Core",
+      "keywords": [
+        "ai",
+        "artificial intelligence",
+        "ai/ml",
+        "ml",
+        "machine learning",
+        "data science"
+      ]
+    },
+    {
+      "name": "ML Platform",
+      "keywords": [
+        "ml platform",
+        "feature store",
+        "inference",
+        "rise",
+        "inference service",
+        "model store",
+        "model registry",
+        "batch results",
+        "training platform",
+        "evaluation service"
+      ]
+    },
+    {
+      "name": "Game Intelligence",
+      "keywords": [
+        "ml bots",
+        "game understanding agents",
+        "reinforcement learning",
+        "imitation learning",
+        "rllib",
+        "ray",
+        "training cluster"
+      ]
+    },
+    {
+      "name": "Production AI",
+      "keywords": [
+        "production ai",
+        "creative tooling",
+        "efficiency toolkit",
+        "generative ai"
+      ]
+    },
+    {
+      "name": "ML Engineering",
+      "keywords": [
+        "ml engineering",
+        "mle",
+        "machine learning engineering"
+      ]
+    },
+    {
+      "name": "Personalization & Recommendation",
+      "keywords": [
+        "personalization",
+        "recommenders",
+        "recommender systems",
+        "content optimization",
+        "personalized offers",
+        "personalized messaging"
+      ]
+    },
+    {
+      "name": "Agentic Workflows",
+      "keywords": [
+        "agentic workflows",
+        "agent orchestration",
+        "autonomous agents",
+        "agentic coding",
+        "agentic development",
+        "agentic pipelines"
+      ]
+    },
+    {
+      "name": "AI Strategy",
+      "keywords": [
+        "ai strategy",
+        "ai working group",
+        "aiwg",
+        "architecture working group",
+        "awg",
+        "tech strategy",
+        "ai roadmap"
+      ]
+    }
+  ],
+  "teams": [
+    {
+      "name": "AI Foundations",
+      "jira_project": null
+    },
+    {
+      "name": "ML Platform",
+      "jira_project": "MLPLAT"
+    },
+    {
+      "name": "Production AI",
+      "jira_project": "PAI"
+    },
+    {
+      "name": "ML Bots",
+      "jira_project": null
+    },
+    {
+      "name": "Data Leadership",
+      "jira_project": null
+    },
+    {
+      "name": "AI Working Group",
+      "jira_project": null
+    },
+    {
+      "name": "Architecture Working Group",
+      "jira_project": null
+    }
+  ],
+  "settings": {
+    "lookback_days": 7,
+    "max_summary_tokens": 500
+  }
+}

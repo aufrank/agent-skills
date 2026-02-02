@@ -11,3 +11,8 @@ progress.log
 results/
 eval_runs/
 dist/
+.DS_Store
+**/.DS_Store
+**/*cache*
+**/data/
+**/content/
