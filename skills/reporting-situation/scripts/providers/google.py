@@ -1,13 +1,14 @@
-from .base import run_mcpc
-from datetime import datetime, timedelta
-import json
+from .base import run_mcpc, ProviderBase
+from datetime import datetime, timedelta, timezone
 
-class GoogleProvider:
+class GoogleProvider(ProviderBase):
     def __init__(self):
         self.session = "@google"
+        self.name = "google"
+        self.id_prefix = "google"
 
     def _get_date_filter(self, days):
-        dt = datetime.utcnow() - timedelta(days=days)
+        dt = datetime.now(timezone.utc) - timedelta(days=days)
         return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     def search_collab_activity(self, email, days=7):
@@ -62,7 +63,8 @@ class GoogleProvider:
                     url = f"https://drive.google.com/open?id={f.get('id')}"
                 
                 results.append({
-                    "id": f"google:{f.get('id')}",
+                    "id": self.build_id(f.get("id")),
+                    "provider": self.name,
                     "type": mime,
                     "title": f.get("name"),
                     "url": url,
@@ -71,7 +73,7 @@ class GoogleProvider:
         return results
 
     def get_content(self, file_id, mime_type=None):
-        real_id = file_id.split(":", 1)[1]
+        real_id = self.parse_id(file_id)
         
         # Dispatch based on MIME type if known
         if mime_type:
@@ -84,13 +86,16 @@ class GoogleProvider:
         
         # Fallback: Try them in sequence (most likely first)
         text = self._get_doc_text(real_id)
-        if text: return text
+        if text:
+            return text
         
         text = self._get_slides_text(real_id)
-        if text: return text
+        if text:
+            return text
         
         text = self._get_sheets_text(real_id)
-        if text: return text
+        if text:
+            return text
 
         return None
 
@@ -113,7 +118,7 @@ class GoogleProvider:
         return None
 
     def get_comments(self, file_id):
-        real_id = file_id.split(":", 1)[1]
+        real_id = self.parse_id(file_id)
         
         # Try all 3 comment tools
         resp = run_mcpc(self.session, "docs.listComments", {"documentId": real_id})
@@ -136,3 +141,8 @@ class GoogleProvider:
                  "resolved": c.get("resolved", False)
              })
         return comments
+
+    def get_modified_time(self, metadata):
+        if not metadata:
+            return None
+        return metadata.get("modifiedTime") or metadata.get("createdTime")

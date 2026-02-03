@@ -1,48 +1,33 @@
 #!/usr/bin/env python3
-import json
-import subprocess
 import sys
 from pathlib import Path
+import argparse
+import json
 
-def run_mcpc(session, tool, args):
-    """
-    Runs a tool via 'mcpc' CLI.
-    """
-    cmd = ["mcpc", session, "tools-call", tool]
-    for k, v in args.items():
-        if isinstance(v, (dict, list, bool, int, float)):
-             val = json.dumps(v)
-        else:
-             val = str(v)
-        cmd.append(f"{k}:={val}")
-    
-    try:
-        # We don't use check=True immediately to handle errors gracefully
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"[WARN] Failed call to {session} {tool}: {result.stderr.strip()}", file=sys.stderr)
-            return None
-        return json.loads(result.stdout)
-    except Exception as e:
-        print(f"[ERROR] Exception calling {session} {tool}: {e}", file=sys.stderr)
-        return None
+from config import load_config
+from providers.base import run_mcpc
 
 def main():
-    # Load config
-    # Default location relative to script: ../templates/interests.json
-    base_dir = Path(__file__).parent.parent
-    config_path = base_dir / "templates" / "interests.json"
-    
-    if len(sys.argv) > 1:
-        config_path = Path(sys.argv[1])
-    
-    if not config_path.exists():
-        print(f"Config file not found: {config_path}", file=sys.stderr)
-        # Fallback to empty config to allow partial runs
-        config = {}
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", help="Path to config.json")
+    parser.add_argument("--interests", help="Deprecated: Path to interests.json")
+    args = parser.parse_args()
+
+    config = {}
+    if args.interests:
+        print("[WARN] --interests is deprecated. Use templates/config.json instead.", file=sys.stderr)
+        interests_path = Path(args.interests)
+        if interests_path.exists():
+            with open(interests_path) as f:
+                config = json.load(f)
+        else:
+            print(f"Config file not found: {interests_path}", file=sys.stderr)
     else:
-        with open(config_path) as f:
-            config = json.load(f)
+        try:
+            config = load_config(args.config)
+        except FileNotFoundError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            config = {}
     
     report_data = {}
 
@@ -65,24 +50,39 @@ def main():
 
     # 3. Notion
     keywords = config.get("keywords", [])
+    if not keywords and config.get("topics"):
+        keywords = [kw for t in config.get("topics", []) for kw in t.get("keywords", [])]
     if keywords:
         print(f"Searching Notion for {keywords[0] if keywords else '...'}...", file=sys.stderr)
         # We only search for the first keyword to avoid spamming in this MVP
         if len(keywords) > 0:
             kw = keywords[0]
-            # Assuming standard notion server has a 'search' tool
-            notion_results = run_mcpc("@notion", "search", {"query": kw})
+            notion_results = run_mcpc("@notion", "notion-search", {"query": kw})
             if notion_results:
                  report_data["notion"] = notion_results
 
     # 4. Jira
     projects = config.get("jira_projects", [])
+    if not projects and config.get("teams"):
+        projects = [t.get("jira_project") for t in config.get("teams", []) if t.get("jira_project")]
     if projects:
+        jira_cloud_id = (
+            config.get("providers", {})
+            .get("jira", {})
+            .get("cloud_id")
+        )
+        if not jira_cloud_id:
+            resources = run_mcpc("@jira", "getAccessibleAtlassianResources", {})
+            if isinstance(resources, list) and resources:
+                jira_cloud_id = resources[0].get("id")
+
         # Construct JQL
         jql = f"project in ({','.join(projects)}) AND status not in (Closed, Done) ORDER BY updated DESC"
         print(f"Searching Jira: {jql}...", file=sys.stderr)
-        # tool name usually 'search' or 'jql'
-        jira_results = run_mcpc("@jira", "search", {"jql": jql})
+        jira_args = {"jql": jql}
+        if jira_cloud_id:
+            jira_args["cloudId"] = jira_cloud_id
+        jira_results = run_mcpc("@jira", "searchJiraIssuesUsingJql", jira_args)
         if jira_results:
              report_data["jira"] = jira_results
 

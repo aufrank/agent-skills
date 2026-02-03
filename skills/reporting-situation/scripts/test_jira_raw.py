@@ -1,5 +1,4 @@
 from providers.base import run_mcpc
-import sys
 import json
 
 def main():

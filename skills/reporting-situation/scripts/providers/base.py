@@ -5,6 +5,26 @@ import re
 import tempfile
 import os
 
+
+class ProviderBase:
+    name = ""
+    id_prefix = ""
+
+    def build_id(self, raw_id):
+        return f"{self.id_prefix}:{raw_id}"
+
+    def parse_id(self, unique_id):
+        if ":" in unique_id:
+            return unique_id.split(":", 1)[1]
+        return unique_id
+
+    def get_modified_time(self, metadata):
+        return None
+
+    @property
+    def provider_name(self):
+        return self.name
+
 def run_mcpc(session, tool, args):
     cmd = ["mcpc", "--json", session, "tools-call", tool]
     for k, v in args.items():

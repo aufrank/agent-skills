@@ -56,11 +56,14 @@ Edit `templates/config.json` to manage:
 *   **Collaborators**: People to track (Name, Email, Jira Handle).
 *   **Topics**: Keywords for semantic search (e.g., "ML Platform").
 *   **Teams**: Jira Project keys and Team names.
+*   **Providers**: Jira `cloud_id` and `base_url` (optional, auto-discovered if omitted).
+*   **Insights**: Slicing runner path and LLM provider settings for `generate_insights.py`.
 
 ## Data Structures
 
 - **`tracker.json`**: The database of all discovered items, their summaries, and last-seen timestamps.
-- **`config.json`**: User definitions.
+- **`config.json`**: User definitions and runtime settings.
+- **`interests.json`**: Deprecated (use `config.json` instead).
 
 ## Requirements
 

@@ -1,29 +1,14 @@
 #!/usr/bin/env python3
-import json
 import sys
 import argparse
 import subprocess
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from tracker import Tracker
-from providers.google import GoogleProvider
-from providers.notion import NotionProvider
-from providers.jira import JiraProvider
-
-def load_config(config_path):
-    if not config_path:
-        config_path = Path(__file__).parent.parent / "templates" / "config.json"
-    else:
-        config_path = Path(config_path)
-    
-    if not config_path.exists():
-        print(f"[ERROR] Config not found: {config_path}")
-        sys.exit(1)
-        
-    with open(config_path) as f:
-        return json.load(f)
+from config import load_config
+from providers.registry import build_provider_registry
 
 def restart_session(session_name):
     print(f"Restarting {session_name}...", end=" ", flush=True)
@@ -98,9 +83,7 @@ def process_item(unique_id, provider, tracker, item_tags, target_emails):
                     mod_time = None
                     if "raw_metadata" in item:
                         meta = item["raw_metadata"]
-                        mod_time = meta.get("modifiedTime") or meta.get("last_edited_time")
-                        if not mod_time and "fields" in meta:
-                             mod_time = meta["fields"].get("updated")
+                        mod_time = provider.get_modified_time(meta)
                     
                     tracker.save_content(unique_id, content, mod_time)
                     
@@ -142,7 +125,11 @@ def main():
             print("Aborting due to provider failure.")
             sys.exit(1)
 
-    config = load_config(args.config)
+    try:
+        config = load_config(args.config)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        sys.exit(1)
     
     # Extract target emails for highlighting
     target_emails = set()
@@ -152,11 +139,7 @@ def main():
             
     tracker = Tracker()
     
-    providers = {
-        "google": GoogleProvider(),
-        "notion": NotionProvider(),
-        "jira": JiraProvider()
-    }
+    providers = build_provider_registry(config)
     
     item_tags = {}
     items_to_process = [] 
@@ -172,10 +155,12 @@ def main():
                 item_tags[res["id"]] = set()
             item_tags[res["id"]].add(tag)
             
-            prefix = res["id"].split(":")[0]
-            if prefix in providers:
+            provider_key = res.get("provider")
+            if not provider_key and res.get("id"):
+                provider_key = res["id"].split(":", 1)[0]
+            if provider_key in providers:
                 # Dedupe in list
-                item_tuple = (res["id"], providers[prefix])
+                item_tuple = (res["id"], providers[provider_key])
                 # Check if tuple is already in items_to_process
                 if item_tuple not in items_to_process:
                      items_to_process.append(item_tuple)
@@ -228,7 +213,8 @@ def main():
     print(f"Queued {len(search_tasks)} search tasks. Executing...")
     
     sweep_lock = Lock()
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    max_workers = config.get("settings", {}).get("max_workers", 10)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for func, f_args, tag in search_tasks:
             futures.append(executor.submit(run_search_task, func, f_args, tag, sweep_lock, handle_results))
@@ -242,8 +228,8 @@ def main():
     print(f"\n>>> Sweep Complete. Found {len(items_to_process)} items to process/summarize.")
     
     # Process items in parallel
-    print("Starting content processing (max_workers=10)...")
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    print(f"Starting content processing (max_workers={max_workers})...")
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for unique_id, provider in items_to_process:
             futures.append(executor.submit(
@@ -264,21 +250,16 @@ def main():
     corpus_data = [] # List of (title, content_text, discussion_text)
     print("Building corpus...")
     
-    # Expand window: if days=7, lookback 49 days for comments
-    comment_lookback_days = args.days * 7
-    cutoff = datetime.now(timezone.utc) - timedelta(days=comment_lookback_days)
-
     for unique_id, provider in items_to_process:
         item = tracker.get_item(unique_id)
-        if not item: continue
+        if not item:
+            continue
         
         # 1. Content
         mod_time = None
         if "raw_metadata" in item:
             meta = item["raw_metadata"]
-            mod_time = meta.get("modifiedTime") or meta.get("last_edited_time")
-            if not mod_time and "fields" in meta:
-                    mod_time = meta["fields"].get("updated")
+            mod_time = provider.get_modified_time(meta)
         
         content_path = tracker.get_content_path(unique_id, mod_time)
         content_text = ""
@@ -336,7 +317,8 @@ def main():
         tag_items = []
         for uid in relevant_ids:
             it = tracker.get_item(uid)
-            if it: tag_items.append(it)
+            if it:
+                tag_items.append(it)
         
         tag_items.sort(key=lambda x: x["last_seen"], reverse=True)
         

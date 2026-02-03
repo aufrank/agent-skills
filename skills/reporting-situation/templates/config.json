@@ -159,6 +159,21 @@
   ],
   "settings": {
     "lookback_days": 7,
-    "max_summary_tokens": 500
+    "max_summary_tokens": 500,
+    "max_workers": 10
+  },
+  "providers": {
+    "jira": {
+      "cloud_id": null,
+      "base_url": "https://riotgames.atlassian.net"
+    }
+  },
+  "insights": {
+    "slice_runner_path": "~/.gemini/skills/slicing-long-contexts/scripts/slice_runner.py",
+    "provider": "openai",
+    "chunk_size": 40000,
+    "max_slices": 10,
+    "prefer_headings": true,
+    "summary_out": "reports/insights/Executive_Summary.md"
   }
 }

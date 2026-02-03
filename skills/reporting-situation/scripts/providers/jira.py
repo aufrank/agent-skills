@@ -1,12 +1,14 @@
-from .base import run_mcpc
-import sys
+from .base import run_mcpc, ProviderBase
 
-class JiraProvider:
-    def __init__(self):
+class JiraProvider(ProviderBase):
+    def __init__(self, cloud_id=None, base_url=None):
         self.session = "@jira"
         self.search_tool = "searchJiraIssuesUsingJql"
-        self.cloud_id = "ae3605cc-2ea8-41ef-86e8-c7cda3a94bc0"
+        self.cloud_id = cloud_id
+        self.base_url = (base_url or "").rstrip("/")
         self._user_cache = {} 
+        self.name = "jira"
+        self.id_prefix = "jira"
 
     def _ensure_cloud_id(self):
         if self.cloud_id:
@@ -98,11 +100,13 @@ class JiraProvider:
         for i in issues:
             key = i.get('key')
             summary = i.get('fields', {}).get('summary', 'No Summary')
+            issue_url_base = self.base_url or "https://example.atlassian.net"
             results.append({
-                "id": f"jira:{key}",
+                "id": self.build_id(key),
+                "provider": self.name,
                 "type": "issue",
                 "title": f"{key}: {summary}",
-                "url": f"https://riotgames.atlassian.net/browse/{key}",
+                "url": f"{issue_url_base}/browse/{key}",
                 "metadata": i
             })
         return results
@@ -110,7 +114,7 @@ class JiraProvider:
     def get_content(self, issue_id):
         if not self._ensure_cloud_id():
             return None
-        real_id = issue_id.split(":", 1)[1]
+        real_id = self.parse_id(issue_id)
         resp = run_mcpc(self.session, "getJiraIssue", {
             "cloudId": self.cloud_id,
             "issueIdOrKey": real_id
@@ -123,7 +127,7 @@ class JiraProvider:
     def get_comments(self, issue_id):
         if not self._ensure_cloud_id():
             return []
-        real_id = issue_id.split(":", 1)[1]
+        real_id = self.parse_id(issue_id)
         resp = run_mcpc(self.session, "getJiraIssue", {
             "cloudId": self.cloud_id,
             "issueIdOrKey": real_id
@@ -140,3 +144,9 @@ class JiraProvider:
                      "resolved": False 
                  })
         return comments
+
+    def get_modified_time(self, metadata):
+        if not metadata:
+            return None
+        fields = metadata.get("fields", {})
+        return fields.get("updated")

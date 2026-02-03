@@ -1,13 +1,14 @@
-from .base import run_mcpc
-import json
+from .base import run_mcpc, ProviderBase
 import sys
 import re
 from datetime import datetime, timedelta, timezone
 
-class NotionProvider:
+class NotionProvider(ProviderBase):
     def __init__(self):
         self.session = "@notion"
         self._user_cache = {} # email/name -> id
+        self.name = "notion"
+        self.id_prefix = "notion"
 
     def _resolve_user(self, email_or_name):
         if email_or_name in self._user_cache:
@@ -76,10 +77,12 @@ class NotionProvider:
         cutoff_dt = datetime.now(timezone.utc) - timedelta(days=days)
         
         for item in items:
-            if isinstance(item, str): continue
+            if isinstance(item, str):
+                continue
 
             obj_id = item.get("id")
-            if not obj_id: continue
+            if not obj_id:
+                continue
             
             # Client-side Date Filtering
             # Use 'timestamp' (ISO format) from Notion MCP search results
@@ -101,17 +104,20 @@ class NotionProvider:
             props = item.get("properties", {})
             if title == "Untitled":
                 if "title" in props:
-                     t_block = props["title"].get("title", [])
-                     if t_block: title = t_block[0].get("plain_text", "Untitled")
+                    t_block = props["title"].get("title", [])
+                    if t_block:
+                        title = t_block[0].get("plain_text", "Untitled")
                 elif "Name" in props:
-                     t_block = props["Name"].get("title", [])
-                     if t_block: title = t_block[0].get("plain_text", "Untitled")
+                    t_block = props["Name"].get("title", [])
+                    if t_block:
+                        title = t_block[0].get("plain_text", "Untitled")
             
             if not url:
                 url = f"https://notion.so/{obj_id.replace('-', '')}"
 
             results.append({
-                "id": f"notion:{obj_id}",
+                "id": self.build_id(obj_id),
+                "provider": self.name,
                 "type": item.get("object", "page"),
                 "title": title,
                 "url": url,
@@ -120,7 +126,7 @@ class NotionProvider:
         return results
 
     def get_content(self, page_id):
-        real_id = page_id.split(":", 1)[1]
+        real_id = self.parse_id(page_id)
         resp = run_mcpc(self.session, "notion-fetch", {"id": real_id})
         
         content_text = ""
@@ -138,7 +144,7 @@ class NotionProvider:
         return None
 
     def get_comments(self, page_id):
-        real_id = page_id.split(":", 1)[1]
+        real_id = self.parse_id(page_id)
         resp = run_mcpc(self.session, "notion-get-comments", {"page_id": real_id})
         
         results = []
@@ -161,3 +167,8 @@ class NotionProvider:
                 "resolved": False
             })
         return comments
+
+    def get_modified_time(self, metadata):
+        if not metadata:
+            return None
+        return metadata.get("last_edited_time") or metadata.get("timestamp")

@@ -3,7 +3,6 @@
 Utility to verify tool availability and names for the Situation Report skill.
 Run this to confirm that @jira and @notion expose the tools we expect.
 """
-import sys
 import subprocess
 import json
 import re
@@ -65,7 +64,7 @@ def check_server(session, expected_tools):
                  # Fallback: raw text saved despite --json flag.
                  pass
                  
-    except Exception as e:
+    except Exception:
         # JSON parsing failed
         pass
 
@@ -79,7 +78,7 @@ def check_server(session, expected_tools):
                     # Look for lines starting with "* `toolname`" in typical text output
                     # Attempt to extract tools from error text or non-JSON output.
                     pass
-        except:
+        except Exception:
             pass
             
         # Retry with text mode if JSON mode failed hard (empty file or garbage)

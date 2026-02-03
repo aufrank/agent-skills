@@ -1,9 +1,9 @@
 from providers.base import run_mcpc
-import sys
 
 def main():
     resources = run_mcpc("@jira", "getAccessibleAtlassianResources", {})
-    if not resources: return
+    if not resources:
+        return
     cloud_id = resources[0]['id']
     
     # Try updatedBy syntax
