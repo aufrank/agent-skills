@@ -16,6 +16,8 @@ class JiraProvider(ProviderBase):
         resources = run_mcpc(self.session, "getAccessibleAtlassianResources", {})
         if resources and isinstance(resources, list) and len(resources) > 0:
             self.cloud_id = resources[0].get("id")
+            if not self.base_url:
+                self.base_url = (resources[0].get("url") or "").rstrip("/")
             return True
         return False
 
@@ -100,15 +102,16 @@ class JiraProvider(ProviderBase):
         for i in issues:
             key = i.get('key')
             summary = i.get('fields', {}).get('summary', 'No Summary')
-            issue_url_base = self.base_url or "https://example.atlassian.net"
-            results.append({
+            item = {
                 "id": self.build_id(key),
                 "provider": self.name,
                 "type": "issue",
                 "title": f"{key}: {summary}",
-                "url": f"{issue_url_base}/browse/{key}",
                 "metadata": i
-            })
+            }
+            if self.base_url:
+                item["url"] = f"{self.base_url}/browse/{key}"
+            results.append(item)
         return results
 
     def get_content(self, issue_id):

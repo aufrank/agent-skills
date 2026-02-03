@@ -28,8 +28,8 @@ def main():
     try:
         config = load_config(args.config)
     except FileNotFoundError as e:
-        print(f"[ERROR] {e}")
-        sys.exit(1)
+        print(f"[WARN] {e}. Continuing with defaults.")
+        config = {}
 
     insights_config = config.get("insights", {})
 

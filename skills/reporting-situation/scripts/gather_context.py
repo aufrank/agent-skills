@@ -59,7 +59,7 @@ def main():
             kw = keywords[0]
             notion_results = run_mcpc("@notion", "notion-search", {"query": kw})
             if notion_results:
-                 report_data["notion"] = notion_results
+                report_data["notion"] = notion_results
 
     # 4. Jira
     projects = config.get("jira_projects", [])
@@ -75,16 +75,16 @@ def main():
             resources = run_mcpc("@jira", "getAccessibleAtlassianResources", {})
             if isinstance(resources, list) and resources:
                 jira_cloud_id = resources[0].get("id")
-
-        # Construct JQL
-        jql = f"project in ({','.join(projects)}) AND status not in (Closed, Done) ORDER BY updated DESC"
-        print(f"Searching Jira: {jql}...", file=sys.stderr)
-        jira_args = {"jql": jql}
-        if jira_cloud_id:
-            jira_args["cloudId"] = jira_cloud_id
-        jira_results = run_mcpc("@jira", "searchJiraIssuesUsingJql", jira_args)
-        if jira_results:
-             report_data["jira"] = jira_results
+        if not jira_cloud_id:
+            print("[ERROR] Jira cloudId missing; skipping Jira search.", file=sys.stderr)
+        else:
+            # Construct JQL
+            jql = f"project in ({','.join(projects)}) AND status not in (Closed, Done) ORDER BY updated DESC"
+            print(f"Searching Jira: {jql}...", file=sys.stderr)
+            jira_args = {"jql": jql, "cloudId": jira_cloud_id}
+            jira_results = run_mcpc("@jira", "searchJiraIssuesUsingJql", jira_args)
+            if jira_results:
+                report_data["jira"] = jira_results
 
     # Output aggregated data
     print(json.dumps(report_data, indent=2))

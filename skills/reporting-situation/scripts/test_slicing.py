@@ -8,7 +8,11 @@ from config import load_config
 
 
 def main():
-    config = load_config()
+    try:
+        config = load_config()
+    except FileNotFoundError as e:
+        print(f"[WARN] {e}. Continuing with defaults.")
+        config = {}
     insights = config.get("insights", {})
     default_runner = Path.home() / ".gemini" / "skills" / "slicing-long-contexts" / "scripts" / "slice_runner.py"
     runner = Path(insights.get("slice_runner_path", default_runner)).expanduser()
